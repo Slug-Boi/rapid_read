@@ -1,16 +1,15 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
-
-
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -28,8 +27,7 @@ var rootCmd = &cobra.Command{
 	The default tool is xPDFReaders pdftotext CLI tool.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	Run: func(cmd *cobra.Command, args []string) { 
-
+	Run: func(cmd *cobra.Command, args []string) {
 
 	},
 }
@@ -44,4 +42,86 @@ func Execute() {
 func init() {
 }
 
+func Setup_config(input, confDir string) {
+	// Create config directory and file
+	if input == "y" {
 
+		// Create config directory
+		err := os.Mkdir(confDir+"rapid_read", 0755)
+		if err != nil {
+			panic("Failed to create config directory: " + err.Error())
+		}
+
+		// Create config file
+		file, err := os.Create(confDir + "rapid_read/config.json")
+		if err != nil {
+			panic("Failed to create config file: " + err.Error())
+		}
+
+		// Write to config file
+		_, err = file.WriteString("PDFTool: \"pdftotext\" \n")
+		if err != nil {
+			panic("Failed to write to config file: " + err.Error())
+		}
+
+		fmt.Println("Config file created, default PDF to text converter is pdftotext.")
+
+	} else {
+		fmt.Println("Config file not found, exiting...")
+		os.Exit(1)
+	}
+
+	Continue()
+}
+
+func Check_config() *Config {
+	confDir, err := os.UserConfigDir()
+	if err != nil {
+		panic("User $HOME variable not set: " + err.Error())
+	}
+
+	_, err = os.Stat(confDir + "rapid_read/config.json")
+	if err != nil {
+		fmt.Println("Config file not found, would you like the program to create one for you? (y/n)")
+		var input string
+		fmt.Scanln(&input)
+
+		Setup_config(input, confDir)
+	}
+
+	return unmarshal_config(confDir)
+}
+
+func Continue() {
+	fmt.Println("Would you like to continue? (y/n)")
+	var input string
+	fmt.Scanln(&input)
+	if input != "y" {
+		os.Exit(1)
+	}
+}
+
+type Config struct {
+	PDFTool        string
+	Font           string
+	FontSize       int
+	HighlightColor string
+	HighlightSpeed int
+	WordAmount     int
+	DarkMode       bool
+	Keybinds       map[string]string
+}
+
+func unmarshal_config(confDir string) *Config {
+	// Read config file
+	var config Config
+	file, err := os.ReadFile(confDir + "rapid_read/config.json")
+	if err != nil {
+		panic("Failed to open config file: " + err.Error())
+	}
+	if err := json.Unmarshal(file, &config); err != nil {
+		panic("Failed to unmarshal config file: " + err.Error())
+	}
+
+	return &config
+}
