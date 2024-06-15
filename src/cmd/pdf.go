@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -37,8 +38,9 @@ var pdfCmd = &cobra.Command{
 		fmt.Println(PDFTool + " called")
 	
 		// Open the text file	
-		//TODO: Strip the file extension from the PDF file	
-		Open(args[0] + ".txt")
+		nameLst := strings.Split(args[0], ".")
+		name := nameLst[len(nameLst)-2]
+		Open(name + ".txt")
 	},
 }
 
