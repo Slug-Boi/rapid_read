@@ -1,0 +1,16 @@
+{
+    "PDFTool": "pdftotext",
+    "font": "Arial",
+    "fontSize": 14,
+    "highlightColor": "#FF0000",
+    "textSpeed": 1,
+    "wordAmount": "3",
+    "darkMode": true,
+    "keybinds": {
+      "MoveBack": "KeyLeft",
+      "MoveForward": "KeyRight",
+      "IncreaseSpeed": "KeyUp",
+      "DecreaseSpeed":"KeyDown",
+      "Pause": "KeySpace"
+    }
+  }
