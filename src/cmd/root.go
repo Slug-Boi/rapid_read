@@ -47,19 +47,39 @@ func Setup_config(input, confDir string) {
 	if input == "y" {
 
 		// Create config directory
-		err := os.Mkdir(confDir+"rapid_read", 0755)
+		err := os.Mkdir(confDir+"/rapid_read", 0755)
 		if err != nil {
 			panic("Failed to create config directory: " + err.Error())
 		}
 
 		// Create config file
-		file, err := os.Create(confDir + "rapid_read/config.json")
+		file, err := os.Create(confDir + "/rapid_read/config.json")
 		if err != nil {
 			panic("Failed to create config file: " + err.Error())
 		}
 
 		// Write to config file
-		_, err = file.WriteString("PDFTool: \"pdftotext\" \n")
+		defaultConfig := Config{
+			PDFTool:        "pdftotext",
+			Font:           "Arial",
+			FontSize:       12,
+			HighlightColor: "#FF0000",
+			TextSpeed:      1,
+			WordAmount:     1,
+			DarkMode:       true,
+			Keybinds:       map[string]string{"MoveBack": "KeyRight", 
+											  "MoveForward": "KeyLeft", 
+											  "IncreaseSpeed": "KeyUp", 
+											  "DecreaseSpeed": "KeyDown",
+											  "Pause": "Space"},
+		}
+
+		config, err := json.MarshalIndent(defaultConfig, "", "    ")
+		if err != nil {
+			panic("Failed to marshal config file: " + err.Error())
+		}
+
+		_, err = file.Write(config)
 		if err != nil {
 			panic("Failed to write to config file: " + err.Error())
 		}
@@ -76,11 +96,12 @@ func Setup_config(input, confDir string) {
 
 func Check_config() *Config {
 	confDir, err := os.UserConfigDir()
+
 	if err != nil {
 		panic("User $HOME variable not set: " + err.Error())
 	}
 
-	_, err = os.Stat(confDir + "rapid_read/config.json")
+	_, err = os.Stat(confDir + "/rapid_read/config.json")
 	if err != nil {
 		fmt.Println("Config file not found, would you like the program to create one for you? (y/n)")
 		var input string
@@ -102,20 +123,20 @@ func Continue() {
 }
 
 type Config struct {
-	PDFTool        string
-	Font           string
-	FontSize       int
-	HighlightColor string
-	HighlightSpeed int
-	WordAmount     int
-	DarkMode       bool
-	Keybinds       map[string]string
+	PDFTool        string            `json:"PDFTool"`
+	Font           string            `json:"font"`
+	FontSize       int               `json:"fontSize"`
+	HighlightColor string            `json:"highlightColor"`
+	TextSpeed      int               `json:"textSpeed"`
+	WordAmount     int               `json:"wordAmount"`
+	DarkMode       bool              `json:"darkMode"`
+	Keybinds       map[string]string `json:"keybinds"`
 }
 
 func unmarshal_config(confDir string) *Config {
 	// Read config file
 	var config Config
-	file, err := os.ReadFile(confDir + "rapid_read/config.json")
+	file, err := os.ReadFile(confDir + "/rapid_read/config.json")
 	if err != nil {
 		panic("Failed to open config file: " + err.Error())
 	}
